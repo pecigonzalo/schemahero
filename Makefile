@@ -1,6 +1,6 @@
 
 SHELL := /bin/bash
-VERSION ?=`git describe --tags`
+VERSION ?= $(if $(GIT_TAG),$(GIT_TAG),$(shell git describe --tags))
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
 GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)
@@ -149,10 +149,10 @@ local: bin/kubectl-schemahero manager
 .PHONY: kind
 kind: bin/kubectl-schemahero manager
 
-.PHONY: contoller-gen
+.PHONY: controller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.14.0
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
@@ -226,10 +226,10 @@ build-schemahero:
 
 .PHONY: cosign-sign
 cosign-sign:
-	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero@${DIGEST_SCHEMAHERO}
-	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
-	cosign sign --yes --key ./cosign.key schemahero/schemahero@${DIGEST_SCHEMAHERO}
-	cosign sign --yes --key ./cosign.key schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx ${DIGEST_SCHEMAHERO}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx ${DIGEST_SCHEMAHERO_MANAGER}
+	cosign sign --yes --key ./cosign.key ${DIGEST_SCHEMAHERO}
+	cosign sign --yes --key ./cosign.key ${DIGEST_SCHEMAHERO_MANAGER}
 
 .PHONY: scan
 scan:
